@@ -55,7 +55,7 @@ export const Badge = (props: Props) => {
       Powered by
       <a
         ref={liteBadge}
-        href={'https://fusionflow.maslow.ai/'}
+        href={'https://maslow.ai'}
         target="_blank"
         rel="noopener noreferrer"
         class="lite-badge"
