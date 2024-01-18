@@ -1,4 +1,5 @@
 import { onCleanup, onMount } from 'solid-js';
+import logo from '../assets/images/Maslow_Complete_Logo_Black.png';
 
 type Props = {
   botContainer: HTMLDivElement | undefined;
@@ -16,7 +17,7 @@ export const Badge = (props: Props) => {
     mutations.forEach((mutation) => {
       mutation.removedNodes.forEach((removedNode) => {
         if ('id' in removedNode && liteBadge && removedNode.id == 'lite-badge') {
-          console.log("Sorry, you can't remove the brand 😅");
+          //console.log("Sorry, you can't remove the brand 😅");
           props.botContainer?.append(liteBadge);
         }
       });
@@ -53,14 +54,16 @@ export const Badge = (props: Props) => {
       Powered by
       <a
         ref={liteBadge}
-        href={'https://flowiseai.com'}
+        href={'https://maslow.ai'}
         target="_blank"
         rel="noopener noreferrer"
         class="lite-badge"
         id="lite-badge"
         style={{ 'font-weight': 'bold', color: props.poweredByTextColor ?? defaultTextColor }}
       >
-        <span> Flowise</span>
+        <span>
+          <img style={{ height: '17px', width: '100px', position: 'absolute', top: '14px', right: '61px' }} src={logo} />
+        </span>
       </a>
     </span>
   );
