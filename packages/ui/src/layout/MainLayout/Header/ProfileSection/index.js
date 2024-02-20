@@ -180,9 +180,6 @@ const ProfileSection = ({ username, handleLogout }) => {
                           <ListItemButton
                             sx={{
                               borderRadius: `${customization.borderRadius}px`,
-                              '&:hover p': {
-                                color: customization.isDarkMode ? '#fff !important' : '#fff !important',
-                            },
                             }}
                             onClick={handleLogout}
                           >

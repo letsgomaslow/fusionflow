@@ -96,51 +96,45 @@ class OpenAIAssistant_Agents implements INode {
         return null
     }
 
-    async clearChatMessages(nodeData: INodeData, options: ICommonObject, sessionIdObj: { type: string; id: string }): Promise<void> {
-        const selectedAssistantId = nodeData.inputs?.selectedAssistant as string
-        const appDataSource = options.appDataSource as DataSource
-        const databaseEntities = options.databaseEntities as IDatabaseEntity
+    //@ts-ignore
+    memoryMethods = {
+        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+            const selectedAssistantId = nodeData.inputs?.selectedAssistant as string
+            const appDataSource = options.appDataSource as DataSource
+            const databaseEntities = options.databaseEntities as IDatabaseEntity
+            let sessionId = nodeData.inputs?.sessionId as string
 
-        const assistant = await appDataSource.getRepository(databaseEntities['Assistant']).findOneBy({
-            id: selectedAssistantId
-        })
-
-        if (!assistant) {
-            options.logger.error(`Assistant ${selectedAssistantId} not found`)
-            return
-        }
-
-        if (!sessionIdObj) return
-
-        let sessionId = ''
-        if (sessionIdObj.type === 'chatId') {
-            const chatId = sessionIdObj.id
-            const chatmsg = await appDataSource.getRepository(databaseEntities['ChatMessage']).findOneBy({
-                chatId
+            const assistant = await appDataSource.getRepository(databaseEntities['Assistant']).findOneBy({
+                id: selectedAssistantId
             })
-            if (!chatmsg) {
-                options.logger.error(`Chat Message with Chat Id: ${chatId} not found`)
+
+            if (!assistant) {
+                options.logger.error(`Assistant ${selectedAssistantId} not found`)
                 return
             }
-            sessionId = chatmsg.sessionId
-        } else if (sessionIdObj.type === 'threadId') {
-            sessionId = sessionIdObj.id
-        }
 
-        const credentialData = await getCredentialData(assistant.credential ?? '', options)
-        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
-        if (!openAIApiKey) {
-            options.logger.error(`OpenAI ApiKey not found`)
-            return
-        }
+            if (!sessionId && options.chatId) {
+                const chatmsg = await appDataSource.getRepository(databaseEntities['ChatMessage']).findOneBy({
+                    chatId: options.chatId
+                })
+                if (!chatmsg) {
+                    options.logger.error(`Chat Message with Chat Id: ${options.chatId} not found`)
+                    return
+                }
+                sessionId = chatmsg.sessionId
+            }
 
-        const openai = new OpenAI({ apiKey: openAIApiKey })
-        options.logger.info(`Clearing OpenAI Thread ${sessionId}`)
-        try {
+            const credentialData = await getCredentialData(assistant.credential ?? '', options)
+            const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
+            if (!openAIApiKey) {
+                options.logger.error(`OpenAI ApiKey not found`)
+                return
+            }
+
+            const openai = new OpenAI({ apiKey: openAIApiKey })
+            options.logger.info(`Clearing OpenAI Thread ${sessionId}`)
             if (sessionId) await openai.beta.threads.del(sessionId)
             options.logger.info(`Successfully cleared OpenAI Thread ${sessionId}`)
-        } catch (e) {
-            throw new Error(e)
         }
     }
 
@@ -303,11 +297,7 @@ class OpenAIAssistant_Agents implements INode {
                                         options.socketIO.to(options.socketIOClientId).emit('tool', tool.name)
 
                                     try {
-                                        const toolOutput = await tool.call(actions[i].toolInput, undefined, undefined, {
-                                            sessionId: threadId,
-                                            chatId: options.chatId,
-                                            input
-                                        })
+                                        const toolOutput = await tool.call(actions[i].toolInput, undefined, undefined, threadId)
                                         await analyticHandlers.onToolEnd(toolIds, toolOutput)
                                         submitToolOutputs.push({
                                             tool_call_id: actions[i].toolCallId,
@@ -472,7 +462,6 @@ class OpenAIAssistant_Agents implements INode {
             const imageRegex = /<img[^>]*\/>/g
             let llmOutput = returnVal.replace(imageRegex, '')
             llmOutput = llmOutput.replace('<br/>', '')
-
             await analyticHandlers.onLLMEnd(llmIds, llmOutput)
             await analyticHandlers.onChainEnd(parentIds, messageData, true)
 

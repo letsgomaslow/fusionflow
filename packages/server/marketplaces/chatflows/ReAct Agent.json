@@ -1,7 +1,5 @@
 {
     "description": "An agent that uses ReAct logic to decide what action to take",
-    "categories": "Calculator Tool,SerpAPI,ChatOpenAI,MRKL Agent,Langchain",
-    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -101,7 +99,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 3,
+                "version": 2,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -123,14 +121,6 @@
                             {
                                 "label": "gpt-4",
                                 "name": "gpt-4"
-                            },
-                            {
-                                "label": "gpt-4-turbo-preview",
-                                "name": "gpt-4-turbo-preview"
-                            },
-                            {
-                                "label": "gpt-4-0125-preview",
-                                "name": "gpt-4-0125-preview"
                             },
                             {
                                 "label": "gpt-4-1106-preview",

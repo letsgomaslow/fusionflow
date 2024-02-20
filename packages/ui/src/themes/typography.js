@@ -11,6 +11,11 @@ export default function themeTypography(theme) {
             color: theme.heading,
             fontSize: '0.75rem'
         },
+        h5n: {
+            fontSize: '0.875rem',
+            color: theme.heading5,
+            fontWeight: 500
+        },
         h5: {
             fontSize: '0.875rem',
             color: theme.heading,
@@ -34,6 +39,7 @@ export default function themeTypography(theme) {
         h1: {
             fontSize: '2.125rem',
             color: theme.heading,
+            // color: theme.customization.isDarkMode ? "#fff" : "#121D35",
             fontWeight: 700
         },
         subtitle1: {
@@ -55,7 +61,7 @@ export default function themeTypography(theme) {
             fontSize: '0.875rem',
             fontWeight: 400,
             lineHeight: '1.334em',
-            color: theme.heading
+            color: theme.heading,
         },
         body2: {
             letterSpacing: '0em',
@@ -112,7 +118,7 @@ export default function themeTypography(theme) {
             textTransform: 'capitalize'
         },
         commonAvatar: {
-            cursor: 'pointer'
+            cursor: 'pointer',
             // borderRadius: '8px'
         },
         smallAvatar: {

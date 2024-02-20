@@ -11,6 +11,8 @@ import MainCard from 'ui-component/cards/MainCard'
 import ItemCard from 'ui-component/cards/ItemCard'
 import { gridSpacing } from 'store/constant'
 import WorkflowEmptySVG from 'assets/images/workflow_empty.svg'
+import LoginDialog from 'ui-component/dialog/LoginDialog'
+import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
 
 // API
 import chatflowsApi from 'api/chatflows'
@@ -75,25 +77,24 @@ const Chatflows = () => {
         navigate(`/canvas/${selectedChatflow.id}`)
     }
 
-    // Chatflows API Request
     useEffect(() => {
         getAllChatflowsApi.request()
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    // useEffect(() => {
-    //     if (getAllChatflowsApi.error) {
-    //         if (getAllChatflowsApi.error?.response?.status === 401) {
-    //             setLoginDialogProps({
-    //                 title: 'Login',
-    //                 confirmButtonName: 'Login'
-    //             })
-    //             setLoginDialogOpen(true)
-    //         }
-    //     }
-    // }, [getAllChatflowsApi.error])
+    useEffect(() => {
+        if (getAllChatflowsApi.error) {
+            if (getAllChatflowsApi.error?.response?.status === 401) {
+                setLoginDialogProps({
+                    title: 'Login',
+                    confirmButtonName: 'Login'
+                })
+                setLoginDialogOpen(true)
+            }
+        }
+    }, [getAllChatflowsApi.error])
 
-    // The Chatflows API waits for data to be received from the server
     useEffect(() => {
         setLoading(getAllChatflowsApi.loading)
     }, [getAllChatflowsApi.loading])
@@ -167,7 +168,12 @@ const Chatflows = () => {
                                     >
                                         <IconLayoutGrid />
                                     </ToggleButton>
-                                    <ToggleButton sx={{ borderRadius: '0px' }} variant='contained' value='list' title='List View'>
+                                    <ToggleButton
+                                        sx={{ borderRadius: '0px' }}
+                                        variant='contained'
+                                        value='list'
+                                        title='List View'
+                                    >
                                         <IconList />
                                     </ToggleButton>
                                 </ToggleButtonGroup>

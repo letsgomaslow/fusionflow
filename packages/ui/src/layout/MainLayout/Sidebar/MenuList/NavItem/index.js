@@ -115,7 +115,14 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
             <ListItemIcon sx={{ my: 'auto', minWidth: !item?.icon ? 18 : 36 }}>{itemIcon}</ListItemIcon>
             <ListItemText
                 primary={
-                    <Typography variant={customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'h5' : 'body1'} color='inherit'>
+                    <Typography variant={customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'h5' : 'body1'}
+                    color='inherit'
+                    // color={customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'white' : '#121D35'}
+                //     sx={{ color: customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'inherit' : '#121D35' ,
+                //     //  '&:hover': {color: customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'inherit' : 'inherit'} 
+                //     '&:hover': {color: "white"}
+                // }}
+                     >
                         {item.title}
                     </Typography>
                 }

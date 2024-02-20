@@ -1,14 +1,9 @@
 import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ICommonObject } from '../../../src'
-import { MotorheadMemory, MotorheadMemoryInput, InputValues, OutputValues } from 'langchain/memory'
+import { MotorheadMemory, MotorheadMemoryInput, InputValues, MemoryVariables, OutputValues, getBufferString } from 'langchain/memory'
 import fetch from 'node-fetch'
-import { AIMessage, BaseMessage, ChatMessage, HumanMessage } from 'langchain/schema'
-
-type MotorheadMessage = {
-    content: string
-    role: 'Human' | 'AI'
-}
+import { BaseMessage } from 'langchain/schema'
 
 class MotorMemory_Memory implements INode {
     label: string
@@ -51,8 +46,7 @@ class MotorMemory_Memory implements INode {
                 label: 'Session Id',
                 name: 'sessionId',
                 type: 'string',
-                description:
-                    'If not specified, a random id will be used. Learn <a target="_blank" href="https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat">more</a>',
+                description: 'If not specified, the first CHAT_MESSAGE_ID will be used as sessionId',
                 default: '',
                 additionalParams: true,
                 optional: true
@@ -70,19 +64,49 @@ class MotorMemory_Memory implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         return initalizeMotorhead(nodeData, options)
     }
+
+    //@ts-ignore
+    memoryMethods = {
+        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+            const motorhead = await initalizeMotorhead(nodeData, options)
+            const sessionId = nodeData.inputs?.sessionId as string
+            const chatId = options?.chatId as string
+            options.logger.info(`Clearing Motorhead memory session ${sessionId ? sessionId : chatId}`)
+            await motorhead.clear()
+            options.logger.info(`Successfully cleared Motorhead memory session ${sessionId ? sessionId : chatId}`)
+        },
+        async getChatMessages(nodeData: INodeData, options: ICommonObject): Promise<string> {
+            const memoryKey = nodeData.inputs?.memoryKey as string
+            const motorhead = await initalizeMotorhead(nodeData, options)
+            const key = memoryKey ?? 'chat_history'
+            const memoryResult = await motorhead.loadMemoryVariables({})
+            return getBufferString(memoryResult[key])
+        }
+    }
 }
 
 const initalizeMotorhead = async (nodeData: INodeData, options: ICommonObject): Promise<MotorheadMemory> => {
     const memoryKey = nodeData.inputs?.memoryKey as string
     const baseURL = nodeData.inputs?.baseURL as string
-    const sessionId = nodeData.inputs?.sessionId as string
+    const chatId = options?.chatId as string
+
+    let isSessionIdUsingChatMessageId = false
+    let sessionId = ''
+
+    if (!nodeData.inputs?.sessionId && chatId) {
+        isSessionIdUsingChatMessageId = true
+        sessionId = chatId
+    } else {
+        sessionId = nodeData.inputs?.sessionId
+    }
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
     const clientId = getCredentialParam('clientId', credentialData, nodeData)
 
-    let obj: MotorheadMemoryInput = {
+    let obj: MotorheadMemoryInput & MotorheadMemoryExtendedInput = {
         returnMessages: true,
+        isSessionIdUsingChatMessageId,
         sessionId,
         memoryKey
     }
@@ -108,9 +132,23 @@ const initalizeMotorhead = async (nodeData: INodeData, options: ICommonObject): 
     return motorheadMemory
 }
 
+interface MotorheadMemoryExtendedInput {
+    isSessionIdUsingChatMessageId: boolean
+}
+
 class MotorheadMemoryExtended extends MotorheadMemory implements MemoryMethods {
-    constructor(fields: MotorheadMemoryInput) {
+    isSessionIdUsingChatMessageId? = false
+
+    constructor(fields: MotorheadMemoryInput & MotorheadMemoryExtendedInput) {
         super(fields)
+        this.isSessionIdUsingChatMessageId = fields.isSessionIdUsingChatMessageId
+    }
+
+    async loadMemoryVariables(values: InputValues, overrideSessionId = ''): Promise<MemoryVariables> {
+        if (overrideSessionId) {
+            this.sessionId = overrideSessionId
+        }
+        return super.loadMemoryVariables({ values })
     }
 
     async saveContext(inputValues: InputValues, outputValues: OutputValues, overrideSessionId = ''): Promise<void> {
@@ -141,38 +179,14 @@ class MotorheadMemoryExtended extends MotorheadMemory implements MemoryMethods {
     }
 
     async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
-        const id = overrideSessionId ? overrideSessionId : this.sessionId
-        try {
-            const resp = await this.caller.call(fetch, `${this.url}/sessions/${id}/memory`, {
-                //@ts-ignore
-                signal: this.timeout ? AbortSignal.timeout(this.timeout) : undefined,
-                headers: this._getHeaders() as ICommonObject,
-                method: 'GET'
-            })
-            const data = await resp.json()
-            const rawStoredMessages: MotorheadMessage[] = data?.data?.messages ?? []
-
-            const baseMessages = rawStoredMessages.reverse().map((message) => {
-                const { content, role } = message
-                if (role === 'Human') {
-                    return new HumanMessage(content)
-                } else if (role === 'AI') {
-                    return new AIMessage(content)
-                } else {
-                    // default to generic ChatMessage
-                    return new ChatMessage(content, role)
-                }
-            })
-
-            return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
-        } catch (error) {
-            console.error('Error getting session: ', error)
-            return []
-        }
+        const id = overrideSessionId ?? this.sessionId
+        const memoryVariables = await this.loadMemoryVariables({}, id)
+        const baseMessages = memoryVariables[this.memoryKey]
+        return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
-        const id = overrideSessionId ? overrideSessionId : this.sessionId
+        const id = overrideSessionId ?? this.sessionId
         const input = msgArray.find((msg) => msg.type === 'userMessage')
         const output = msgArray.find((msg) => msg.type === 'apiMessage')
         const inputValues = { [this.inputKey ?? 'input']: input?.text }
@@ -182,7 +196,7 @@ class MotorheadMemoryExtended extends MotorheadMemory implements MemoryMethods {
     }
 
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
-        const id = overrideSessionId ? overrideSessionId : this.sessionId
+        const id = overrideSessionId ?? this.sessionId
         await this.clear(id)
     }
 }

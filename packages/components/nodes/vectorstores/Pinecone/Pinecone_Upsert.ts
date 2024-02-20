@@ -96,9 +96,11 @@ class PineconeUpsert_VectorStores implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
+        const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
 
         const client = new Pinecone({
-            apiKey: pineconeApiKey
+            apiKey: pineconeApiKey,
+            environment: pineconeEnv
         })
 
         const pineconeIndex = client.Index(index)

@@ -24,7 +24,7 @@ class Postgres_VectorStores implements INode {
     constructor() {
         this.label = 'Postgres'
         this.name = 'postgres'
-        this.version = 3.0
+        this.version = 2.0
         this.type = 'Postgres'
         this.icon = 'postgres.svg'
         this.category = 'Vector Stores'
@@ -59,6 +59,13 @@ class Postgres_VectorStores implements INode {
                 label: 'Database',
                 name: 'database',
                 type: 'string'
+            },
+            {
+                label: 'SSL Connection',
+                name: 'sslConnection',
+                type: 'boolean',
+                default: false,
+                optional: false
             },
             {
                 label: 'Port',
@@ -117,6 +124,7 @@ class Postgres_VectorStores implements INode {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const additionalConfig = nodeData.inputs?.additionalConfig as string
+            const sslConnection = nodeData.inputs?.sslConnection as boolean
 
             let additionalConfiguration = {}
             if (additionalConfig) {
@@ -134,7 +142,8 @@ class Postgres_VectorStores implements INode {
                 port: nodeData.inputs?.port as number,
                 username: user,
                 password: password,
-                database: nodeData.inputs?.database as string
+                database: nodeData.inputs?.database as string,
+                ssl: sslConnection
             }
 
             const args = {
@@ -189,8 +198,7 @@ class Postgres_VectorStores implements INode {
             type: 'postgres',
             host: nodeData.inputs?.host as string,
             port: nodeData.inputs?.port as number,
-            username: user, // Required by TypeORMVectorStore
-            user: user, // Required by Pool in similaritySearchVectorWithScore
+            username: user,
             password: password,
             database: nodeData.inputs?.database as string
         }
@@ -240,7 +248,14 @@ const similaritySearchVectorWithScore = async (
         ORDER BY "_distance" ASC
         LIMIT $3;`
 
-    const pool = new Pool(postgresConnectionOptions)
+    const poolOptions = {
+        host: postgresConnectionOptions.host,
+        port: postgresConnectionOptions.port,
+        user: postgresConnectionOptions.username,
+        password: postgresConnectionOptions.password,
+        database: postgresConnectionOptions.database
+    }
+    const pool = new Pool(poolOptions)
     const conn = await pool.connect()
 
     const documents = await conn.query(queryString, [embeddingString, _filter, k])

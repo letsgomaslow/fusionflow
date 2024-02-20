@@ -461,9 +461,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         style={{
                             width: 100,
                             height: 100,
-                            // borderRadius: '50%',
-                            backgroundColor: 'white',
-                            color: '#121D35'
+                            borderRadius: '50%',
+                            backgroundColor: 'white'
                         }}
                     >
                         <img

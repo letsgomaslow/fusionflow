@@ -131,13 +131,7 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                         <div key={componentCredential.name}>
                             <ListItemButton
                                 onClick={() => onCredentialSelected(componentCredential)}
-                                sx={{
-                                    p: 0,
-                                    borderRadius: `${customization.borderRadius}px`,
-                                    '&:hover span': {
-                                        color: customization?.isDarkMode ? '#FFF860 !important' : '#fff !important'
-                                    }
-                                }}
+                                sx={{ p: 0, borderRadius: `${customization.borderRadius}px` }}
                             >
                                 <ListItem alignItems='center'>
                                     <ListItemAvatar>
@@ -145,9 +139,8 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                                             style={{
                                                 width: 50,
                                                 height: 50,
-                                                // borderRadius: '50%',
-                                                backgroundColor: 'white',
-                                                color: '#121D35'
+                                                borderRadius: '50%',
+                                                backgroundColor: 'white'
                                             }}
                                         >
                                             <img

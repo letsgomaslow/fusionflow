@@ -1,11 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { DynamicTool } from 'langchain/tools'
-import { DynamicStructuredTool } from '@langchain/core/tools'
-import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
+import { createRetrieverTool } from 'langchain/agents/toolkits'
 import { BaseRetriever } from 'langchain/schema/retriever'
-import { z } from 'zod'
-import { SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
 
 class Retriever_Tools implements INode {
     label: string
@@ -22,7 +19,7 @@ class Retriever_Tools implements INode {
     constructor() {
         this.label = 'Retriever Tool'
         this.name = 'retrieverTool'
-        this.version = 2.0
+        this.version = 1.0
         this.type = 'RetrieverTool'
         this.icon = 'retrievertool.svg'
         this.category = 'Tools'
@@ -47,12 +44,6 @@ class Retriever_Tools implements INode {
                 label: 'Retriever',
                 name: 'retriever',
                 type: 'BaseRetriever'
-            },
-            {
-                label: 'Return Source Documents',
-                name: 'returnSourceDocuments',
-                type: 'boolean',
-                optional: true
             }
         ]
     }
@@ -61,25 +52,12 @@ class Retriever_Tools implements INode {
         const name = nodeData.inputs?.name as string
         const description = nodeData.inputs?.description as string
         const retriever = nodeData.inputs?.retriever as BaseRetriever
-        const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
 
-        const input = {
+        const tool = createRetrieverTool(retriever, {
             name,
             description
-        }
-
-        const func = async ({ input }: { input: string }, runManager?: CallbackManagerForToolRun) => {
-            const docs = await retriever.getRelevantDocuments(input, runManager?.getChild('retriever'))
-            const content = docs.map((doc) => doc.pageContent).join('\n\n')
-            const sourceDocuments = JSON.stringify(docs)
-            return returnSourceDocuments ? content + SOURCE_DOCUMENTS_PREFIX + sourceDocuments : content
-        }
-
-        const schema = z.object({
-            input: z.string().describe('query to look up in retriever')
         })
 
-        const tool = new DynamicStructuredTool({ ...input, func, schema })
         return tool
     }
 }

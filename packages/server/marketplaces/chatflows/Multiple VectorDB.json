@@ -1,7 +1,5 @@
 {
     "description": "Use the agent to choose between multiple different vector databases, with the ability to use other tools",
-    "categories": "Buffer Memory,ChatOpenAI,Chain Tool,Retrieval QA Chain,Redis,Faiss,Conversational Agent,Langchain",
-    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -273,7 +271,7 @@
             "data": {
                 "id": "openAIEmbeddings_1",
                 "label": "OpenAI Embeddings",
-                "version": 2,
+                "version": 1,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -286,28 +284,6 @@
                         "type": "credential",
                         "credentialNames": ["openAIApi"],
                         "id": "openAIEmbeddings_1-input-credential-credential"
-                    },
-                    {
-                        "label": "Model Name",
-                        "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "text-embedding-3-large",
-                                "name": "text-embedding-3-large"
-                            },
-                            {
-                                "label": "text-embedding-3-small",
-                                "name": "text-embedding-3-small"
-                            },
-                            {
-                                "label": "text-embedding-ada-002",
-                                "name": "text-embedding-ada-002"
-                            }
-                        ],
-                        "default": "text-embedding-ada-002",
-                        "optional": true,
-                        "id": "openAIEmbeddings_1-input-modelName-options"
                     },
                     {
                         "label": "Strip New Lines",
@@ -347,8 +323,7 @@
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
-                    "basepath": "",
-                    "modelName": "text-embedding-ada-002"
+                    "basepath": ""
                 },
                 "outputAnchors": [
                     {
@@ -380,7 +355,7 @@
             "data": {
                 "id": "openAIEmbeddings_2",
                 "label": "OpenAI Embeddings",
-                "version": 2,
+                "version": 1,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -393,28 +368,6 @@
                         "type": "credential",
                         "credentialNames": ["openAIApi"],
                         "id": "openAIEmbeddings_2-input-credential-credential"
-                    },
-                    {
-                        "label": "Model Name",
-                        "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "text-embedding-3-large",
-                                "name": "text-embedding-3-large"
-                            },
-                            {
-                                "label": "text-embedding-3-small",
-                                "name": "text-embedding-3-small"
-                            },
-                            {
-                                "label": "text-embedding-ada-002",
-                                "name": "text-embedding-ada-002"
-                            }
-                        ],
-                        "default": "text-embedding-ada-002",
-                        "optional": true,
-                        "id": "openAIEmbeddings_2-input-modelName-options"
                     },
                     {
                         "label": "Strip New Lines",
@@ -454,8 +407,7 @@
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
-                    "basepath": "",
-                    "modelName": "text-embedding-ada-002"
+                    "basepath": ""
                 },
                 "outputAnchors": [
                     {
@@ -487,7 +439,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 3,
+                "version": 2,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -509,14 +461,6 @@
                             {
                                 "label": "gpt-4",
                                 "name": "gpt-4"
-                            },
-                            {
-                                "label": "gpt-4-turbo-preview",
-                                "name": "gpt-4-turbo-preview"
-                            },
-                            {
-                                "label": "gpt-4-0125-preview",
-                                "name": "gpt-4-0125-preview"
                             },
                             {
                                 "label": "gpt-4-1106-preview",
@@ -966,10 +910,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "plainText_0-output-document-Document|json",
+                                "id": "plainText_0-output-document-Document",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document | json"
+                                "type": "Document"
                             },
                             {
                                 "id": "plainText_0-output-text-string|json",
@@ -1005,7 +949,7 @@
             "data": {
                 "id": "chatOpenAI_1",
                 "label": "ChatOpenAI",
-                "version": 3,
+                "version": 2,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -1027,14 +971,6 @@
                             {
                                 "label": "gpt-4",
                                 "name": "gpt-4"
-                            },
-                            {
-                                "label": "gpt-4-turbo-preview",
-                                "name": "gpt-4-turbo-preview"
-                            },
-                            {
-                                "label": "gpt-4-0125-preview",
-                                "name": "gpt-4-0125-preview"
                             },
                             {
                                 "label": "gpt-4-1106-preview",
@@ -1203,7 +1139,7 @@
             "data": {
                 "id": "chatOpenAI_2",
                 "label": "ChatOpenAI",
-                "version": 3,
+                "version": 2,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -1225,14 +1161,6 @@
                             {
                                 "label": "gpt-4",
                                 "name": "gpt-4"
-                            },
-                            {
-                                "label": "gpt-4-turbo-preview",
-                                "name": "gpt-4-turbo-preview"
-                            },
-                            {
-                                "label": "gpt-4-0125-preview",
-                                "name": "gpt-4-0125-preview"
                             },
                             {
                                 "label": "gpt-4-1106-preview",
@@ -1503,10 +1431,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "plainText_1-output-document-Document|json",
+                                "id": "plainText_1-output-document-Document",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document | json"
+                                "type": "Document"
                             },
                             {
                                 "id": "plainText_1-output-text-string|json",
@@ -1639,7 +1567,7 @@
                         "id": "conversationalAgent_0-input-tools-Tool"
                     },
                     {
-                        "label": "Chat Model",
+                        "label": "Language Model",
                         "name": "model",
                         "type": "BaseChatModel",
                         "id": "conversationalAgent_0-input-model-BaseChatModel"
@@ -1723,11 +1651,11 @@
         },
         {
             "source": "plainText_0",
-            "sourceHandle": "plainText_0-output-document-Document|json",
+            "sourceHandle": "plainText_0-output-document-Document",
             "target": "redis_0",
             "targetHandle": "redis_0-input-document-Document",
             "type": "buttonedge",
-            "id": "plainText_0-plainText_0-output-document-Document|json-redis_0-redis_0-input-document-Document",
+            "id": "plainText_0-plainText_0-output-document-Document-redis_0-redis_0-input-document-Document",
             "data": {
                 "label": ""
             }
@@ -1778,11 +1706,11 @@
         },
         {
             "source": "plainText_1",
-            "sourceHandle": "plainText_1-output-document-Document|json",
+            "sourceHandle": "plainText_1-output-document-Document",
             "target": "faiss_0",
             "targetHandle": "faiss_0-input-document-Document",
             "type": "buttonedge",
-            "id": "plainText_1-plainText_1-output-document-Document|json-faiss_0-faiss_0-input-document-Document",
+            "id": "plainText_1-plainText_1-output-document-Document-faiss_0-faiss_0-input-document-Document",
             "data": {
                 "label": ""
             }

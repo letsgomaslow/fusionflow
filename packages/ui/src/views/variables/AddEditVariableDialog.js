@@ -189,8 +189,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             height: 50,
                             marginRight: 10,
                             // borderRadius: '50%',
-                            backgroundColor: 'white',
-                            color: "#121D35"
+                            backgroundColor: customization.isDarkMode ? '#121D35' : '#fff'
                         }}
                     >
                         <IconVariable

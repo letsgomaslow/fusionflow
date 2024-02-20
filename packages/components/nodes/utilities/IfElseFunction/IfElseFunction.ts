@@ -1,7 +1,6 @@
-import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { NodeVM } from 'vm2'
-import { DataSource } from 'typeorm'
-import { availableDependencies, defaultAllowBuiltInDep, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import { availableDependencies } from '../../../src/utils'
 
 class IfElseFunction_Utilities implements INode {
     label: string
@@ -74,20 +73,10 @@ class IfElseFunction_Utilities implements INode {
         ]
     }
 
-    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, input: string): Promise<any> {
         const ifFunction = nodeData.inputs?.ifFunction as string
         const elseFunction = nodeData.inputs?.elseFunction as string
         const functionInputVariablesRaw = nodeData.inputs?.functionInputVariables
-        const appDataSource = options.appDataSource as DataSource
-        const databaseEntities = options.databaseEntities as IDatabaseEntity
-
-        const variables = await getVars(appDataSource, databaseEntities, nodeData)
-        const flow = {
-            chatflowId: options.chatflowid,
-            sessionId: options.sessionId,
-            chatId: options.chatId,
-            input
-        }
 
         let inputVars: ICommonObject = {}
         if (functionInputVariablesRaw) {
@@ -95,34 +84,33 @@ class IfElseFunction_Utilities implements INode {
                 inputVars =
                     typeof functionInputVariablesRaw === 'object' ? functionInputVariablesRaw : JSON.parse(functionInputVariablesRaw)
             } catch (exception) {
-                throw new Error("Invalid JSON in the IfElse's Input Variables: " + exception)
-            }
-        }
-
-        // Some values might be a stringified JSON, parse it
-        for (const key in inputVars) {
-            if (typeof inputVars[key] === 'string' && inputVars[key].startsWith('{') && inputVars[key].endsWith('}')) {
-                try {
-                    inputVars[key] = JSON.parse(inputVars[key])
-                } catch (e) {
-                    continue
-                }
+                throw new Error("Invalid JSON in the PromptTemplate's promptValues: " + exception)
             }
         }
 
         let sandbox: any = { $input: input }
-        sandbox['$vars'] = prepareSandboxVars(variables)
-        sandbox['$flow'] = flow
 
         if (Object.keys(inputVars).length) {
             for (const item in inputVars) {
-                let value = inputVars[item]
-                if (typeof value === 'string') {
-                    value = handleEscapeCharacters(value, true)
-                }
-                sandbox[`$${item}`] = value
+                sandbox[`$${item}`] = inputVars[item]
             }
         }
+
+        const defaultAllowBuiltInDep = [
+            'assert',
+            'buffer',
+            'crypto',
+            'events',
+            'http',
+            'https',
+            'net',
+            'path',
+            'querystring',
+            'timers',
+            'tls',
+            'url',
+            'zlib'
+        ]
 
         const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
             ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
