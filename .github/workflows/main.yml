@@ -1,0 +1,65 @@
+name: Build and Deploy Docker Image
+
+on:
+  push:
+    branches:
+      - flowise-1.5.0-merge
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build Fusion Flow image
+      run: docker build -t flowise . 
+
+    - name: tag docker image
+      run: docker tag flowise registry.digitalocean.com/maslow--registry/flowise:latest   
+      
+    - name: Get IP address of GitHub Actions server
+      id: get_ip
+      run: echo "IP=$(curl -s ifconfig.me)" >> $GITHUB_ENV    
+
+    - name: Build and push Docker image to DigitalOcean Container Registry
+      run: |
+        echo "${{ secrets.DIGITALOCEAN_TOKEN }}" | docker login -u "${{ secrets.DIGITALOCEAN_USERNAME }}" do.${{ secrets.DIGITALOCEAN_REGION }}.digitaloceanspaces.com --password-stdin
+        docker buildx build --push --tag do.${{ secrets.DIGITALOCEAN_REGION }}.digitaloceanspaces.com/your-registry/your-image-name:latest .
+
+    - name: Install SSH key
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Allow GitHub Actions IP in DigitalOcean firewall
+      run: |
+        GITHUB_ACTIONS_IP=$IP
+        curl -X POST -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.DIGITALOCEAN_API_TOKEN }}" \
+            -d "{\"inbound_rules\":[{\"protocol\":\"tcp\",\"ports\":\"22\",\"sources\":{\"addresses\":[\"$GITHUB_ACTIONS_IP\"],\"droplet_ids\":[],\"tags\":[]}}]}" \
+            "https://api.digitalocean.com/v2/firewalls/3bdf4585-eec5-400f-8f66-676c693348bd/inbound_rules"
+      env:
+        IP: ${{ steps.get_ip.outputs.stdout }}
+
+
+
+    - name: SSH into FusionFlow server and pull latest image
+      run: |
+        ssh -o StrictHostKeyChecking=no raman@y68.183.147.5 'docker login do.${{ secrets.DIGITALOCEAN_REGION }}.digitaloceanspaces.com -u ${{ secrets.DIGITALOCEAN_USERNAME }} -p ${{ secrets.DIGITALOCEAN_TOKEN }} && docker pull do.${{ secrets.DIGITALOCEAN_REGION }}.digitaloceanspaces.com/maslow--registry/flowise:latest'
+
+    - name: SSH into FusionFlow server and restart Docker containers
+      run: |
+        ssh -o StrictHostKeyChecking=no raman@68.183.147.5 'cd /home/raman/maslow/ '
+
+    - name: Delete GitHub Actions IP from DigitalOcean firewall
+      run: |
+        GITHUB_ACTIONS_IP=$IP
+        curl -X DELETE \
+            -H "Authorization: Bearer ${{ secrets.DIGITALOCEAN_API_TOKEN }}" \
+            "https://api.digitalocean.com/v2/firewalls/3bdf4585-eec5-400f-8f66-676c693348bd/inbound_rules?protocol=tcp&ports=22&sources.addresses=$GITHUB_ACTIONS_IP"
+      env:
+        IP: ${{ steps.get_ip.outputs.stdout }}
