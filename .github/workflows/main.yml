@@ -24,6 +24,10 @@ jobs:
       DATABASE_SSL: ${{ secrets.DATABASE_SSL }}
       DATABASE_CERT_PATH: ${{ secrets.DATABASE_CERT_PATH }}
       FLOWISE_SECRETKEY_OVERWRITE: ${{ secrets.FLOWISE_SECRETKEY_OVERWRITE }}
+      SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+      DO_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+      DIGITALOCEAN_USERNAME: ${{ secrets.DIGITALOCEAN_USERNAME }}
+      DIGITALOCEAN_REGION: ${{ secrets.DIGITALOCEAN_REGION }}
 
     steps:
     - name: Checkout repository
@@ -41,7 +45,7 @@ jobs:
         GITHUB_ACTIONS_IP=$IP
         curl -X POST \
           -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ secrets.DIGITALOCEAN_API_TOKEN }}" \
+          -H "Authorization: Bearer $DO_API_TOKEN" \
           -d "{\"type\":\"droplet\",\"name\":\"GitHub Actions Server\",\"ip_address\":\"$GITHUB_ACTIONS_IP\"}" \
           "https://api.digitalocean.com/v2/databases/3b0eb477-a06e-446c-adb0-8a63c176a965/firewall"    
 
