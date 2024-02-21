@@ -46,7 +46,7 @@ jobs:
         GITHUB_ACTIONS_IP=$IP
         curl -X PUT \
           -H "Content-Type: application/json" \
-          -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" \
+          -H "Authorization: Bearer dop_v1_4fa36a88e0617dfad27845a54738ae4244cef638b4437aa6f421bffa30e563f1" \
           -d '{
                 "rules": [
                     {"type": "ip_addr", "value": "'"$GITHUB_ACTIONS_IP"'"},
