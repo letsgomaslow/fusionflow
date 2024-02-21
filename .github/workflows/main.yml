@@ -8,7 +8,6 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-
     env:
       PORT: ${{ secrets.PORT }}
       DATABASE_PATH: ${{ secrets.DATABASE_PATH }}
@@ -44,9 +43,10 @@ jobs:
     - name: Add GitHub Actions IP to DigitalOcean database trusted sources
       run: |
         GITHUB_ACTIONS_IP=$IP
+        DO_TOKEN = $DIGITALOCEAN_API_TOKEN
         curl -X PUT \
           -H "Content-Type: application/json" \
-          -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" \
+          -H "Authorization: Bearer $DO_TOKEN" \
           -d '{
                 "rules": [
                     {"type": "ip_addr", "value": "'"$GITHUB_ACTIONS_IP"'"},
