@@ -9,32 +9,69 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
 
+    env:
+      PORT: ${{ secrets.PORT }}
+      DATABASE_PATH: ${{ secrets.DATABASE_PATH }}
+      APIKEY_PATH: ${{ secrets.APIKEY_PATH }}
+      SECRETKEY_PATH: ${{ secrets.SECRETKEY_PATH }}
+      LOG_PATH: ${{ secrets.LOG_PATH }}
+      DATABASE_TYPE: ${{ secrets.DATABASE_TYPE }}
+      DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+      DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+      DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+      DATABASE_USER: ${{ secrets.DATABASE_USER }}
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      DATABASE_SSL: ${{ secrets.DATABASE_SSL }}
+      DATABASE_CERT_PATH: ${{ secrets.DATABASE_CERT_PATH }}
+      FLOWISE_SECRETKEY_OVERWRITE: ${{ secrets.FLOWISE_SECRETKEY_OVERWRITE }}
+      SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+      DO_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+      DIGITALOCEAN_USERNAME: ${{ secrets.DIGITALOCEAN_USERNAME }}
+      DIGITALOCEAN_REGION: ${{ secrets.DIGITALOCEAN_REGION }}
+      PrimotechIP: ${{secrets.PrimotechIP}}
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
+    
+    - name: Get IP address of GitHub Actions server
+      id: get_ip
+      run: echo "IP=$(curl -s ifconfig.me)" >> $GITHUB_ENV         
+    
+    - name: Add GitHub Actions IP to DigitalOcean database trusted sources
+      run: |
+        GITHUB_ACTIONS_IP=$IP
+        curl -X PUT \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer dop_v1_4fa36a88e0617dfad27845a54738ae4244cef638b4437aa6f421bffa30e563f1" \
+          -d '{
+                "rules": [
+                    {"type": "ip_addr", "value": "'"$GITHUB_ACTIONS_IP"'"},
+                    {"type": "ip_addr", "value": "'"$PrimotechIP"'"},
+                    {"type": "droplet", "value": "400332802"},
+                    {"type": "app", "value": "6d2d9e47-dd4a-4224-8476-68090ae3ee19"}
+                ]
+            }' \
+          "https://api.digitalocean.com/v2/databases/3b0eb477-a06e-446c-adb0-8a63c176a965/firewall"
+      env:
+        IP: ${{ steps.get_ip.outputs.stdout }}    
 
     - name: Build Fusion Flow image
       run: docker build -t flowise . 
-
+        
     - name: tag docker image
       run: docker tag flowise registry.digitalocean.com/maslow--registry/flowise:latest   
-      
-    - name: Get IP address of GitHub Actions server
-      id: get_ip
-      run: echo "IP=$(curl -s ifconfig.me)" >> $GITHUB_ENV    
 
     - name: Build and push Docker image to DigitalOcean Container Registry
       run: |
         echo "${{ secrets.DIGITALOCEAN_TOKEN }}" | docker login -u "${{ secrets.DIGITALOCEAN_USERNAME }}" do.${{ secrets.DIGITALOCEAN_REGION }}.digitaloceanspaces.com --password-stdin
         docker buildx build --push --tag do.${{ secrets.DIGITALOCEAN_REGION }}.digitaloceanspaces.com/your-registry/your-image-name:latest .
 
-    - name: Install SSH key
-      uses: webfactory/ssh-agent@v0.5.3
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+   
+
     - name: Allow GitHub Actions IP in DigitalOcean firewall
       run: |
         GITHUB_ACTIONS_IP=$IP
@@ -44,8 +81,11 @@ jobs:
             "https://api.digitalocean.com/v2/firewalls/3bdf4585-eec5-400f-8f66-676c693348bd/inbound_rules"
       env:
         IP: ${{ steps.get_ip.outputs.stdout }}
-
-
+    
+    - name: Install SSH key
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: SSH into FusionFlow server and pull latest image
       run: |
@@ -53,13 +93,30 @@ jobs:
 
     - name: SSH into FusionFlow server and restart Docker containers
       run: |
-        ssh -o StrictHostKeyChecking=no raman@68.183.147.5 'cd /home/raman/maslow/ '
+        ssh -o StrictHostKeyChecking=no raman@68.183.147.5 'cd /home/raman/maslow/ && docker-compose down && docker-compose up -d'
 
     - name: Delete GitHub Actions IP from DigitalOcean firewall
       run: |
         GITHUB_ACTIONS_IP=$IP
-        curl -X DELETE \
-            -H "Authorization: Bearer ${{ secrets.DIGITALOCEAN_API_TOKEN }}" \
-            "https://api.digitalocean.com/v2/firewalls/3bdf4585-eec5-400f-8f66-676c693348bd/inbound_rules?protocol=tcp&ports=22&sources.addresses=$GITHUB_ACTIONS_IP"
+        curl -X PUT \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer dop_v1_0097483b5f04d95522b9091c62d7f34279efde1cc41104344547af47ac928412" \
+          -d '{
+                "rules": [
+                    {"type": "ip_addr", "value": "'"$PrimotechIP"'"},
+                    {"type": "droplet", "value": "400332802"},
+                    {"type": "app", "value": "6d2d9e47-dd4a-4224-8476-68090ae3ee19"}
+                ]
+            }' \
+          "https://api.digitalocean.com/v2/databases/3b0eb477-a06e-446c-adb0-8a63c176a965/firewall"
       env:
         IP: ${{ steps.get_ip.outputs.stdout }}
+        
+    - name: Delete GitHub Actions IP from DigitalOcean database
+      run: |
+        GITHUB_ACTIONS_IP=$IP
+        curl -X DELETE \
+        H "Authorization: Bearer ${{ secrets.DIGITALOCEAN_API_TOKEN }}" \
+        #    "https://api.digitalocean.com/v2/databases/your-database-id/allowed_ips?ip_address=$GITHUB_ACTIONS_IP"
+      env:
+        IP: ${{ steps.get_ip.outputs.stdout }}    
