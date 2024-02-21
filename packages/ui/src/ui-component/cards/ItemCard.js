@@ -7,14 +7,12 @@ import { Box, Grid, Typography } from '@mui/material'
 // project imports
 import MainCard from 'ui-component/cards/MainCard'
 import SkeletonChatflowCard from 'ui-component/cards/Skeleton/ChatflowCard'
-import theme from 'themes'
 import { useSelector } from 'react-redux'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.ItemCard,
-    // background: theme.customization.isDarkMode ? "#fff" : "#121D35",
+    // background: theme.customization.isDarkMode ? "#fff" : "#121D35", // customization is not working here
     color: theme.darkTextPrimary,
-    // color: customization.isDarkMode ? "#121D35" : "#fff",
     // color: theme.paper,
     overflow: 'auto',
     position: 'relative',
@@ -34,7 +32,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 // ===========================|| CONTRACT CARD ||=========================== //
 
 const ItemCard = ({ isLoading, data, images, onClick }) => {
-    const customization = useSelector((state) => state.customization);
+    const customization = useSelector((state) => state.customization)
     return (
         <>
             {isLoading ? (
@@ -76,13 +74,26 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                                     ></div>
                                 )}
                                 <Typography
-                                    sx={{ color: customization.isDarkMode ? "#121D35" : '#FFF860', fontSize: '1.5rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
+                                    sx={{
+                                        color: customization.isDarkMode ? '#121D35' : '#FFF860',
+                                        fontSize: '1.5rem',
+                                        fontWeight: 500,
+                                        overflowWrap: 'break-word',
+                                        whiteSpace: 'pre-line'
+                                    }}
                                 >
                                     {data.templateName || data.name}
                                 </Typography>
                             </div>
                             {data.description && (
-                                <span style={{ color: customization.isDarkMode ? "#121D35" : "#fff", marginTop: 10, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}>
+                                <span
+                                    style={{
+                                        color: customization.isDarkMode ? '#121D35' : '#fff',
+                                        marginTop: 10,
+                                        overflowWrap: 'break-word',
+                                        whiteSpace: 'pre-line'
+                                    }}
+                                >
                                     {data.description}
                                 </span>
                             )}
@@ -104,7 +115,7 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                                                 marginRight: 5,
                                                 // borderRadius: '50%',
                                                 // backgroundColor: 'white',
-                                                backgroundColor: "#EEEEEE",
+                                                backgroundColor: '#EEEEEE',
                                                 marginTop: 5
                                             }}
                                         >
