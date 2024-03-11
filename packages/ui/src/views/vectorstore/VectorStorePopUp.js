@@ -93,9 +93,9 @@ export const VectorStorePopUp = ({ chatflowid }) => {
                     right: 80,
                     top: 20,
                     // backgroundColor: '#2CD552',
-                    background: 'linear-gradient(to left, #77bfaf 0%, #e084b4 100%)',
+                    background: 'linear-gradient(to bottom right, #e084b4 0%, #77bfaf 100%)',
                     '&:hover': {
-                        background: 'linear-gradient(to left, #77bfaf 0%, #e084b4 100%)'
+                        background: 'linear-gradient(to bottom right, #e084b4 0%, #77bfaf 100%)'
                     }
                 }}
                 ref={anchorRef}

@@ -127,19 +127,27 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     <LoadingButton
                         sx={{
                             mt: 2,
+                            // '&:hover': {
+                            //     backgroundColor: theme.palette.secondary.main,
+                            //     backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
+                            // },
+                            background: 'linear-gradient(to bottom right, #e084b4 0%, #77bfaf 100%)',
                             '&:hover': {
-                                backgroundColor: theme.palette.secondary.main,
-                                backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
+                                background: 'linear-gradient(to bottom right, #e084b4 0%, #77bfaf 100%)'
                             },
                             '&:disabled': {
-                                backgroundColor: theme.palette.secondary.main,
-                                backgroundImage: `linear-gradient(rgb(0 0 0/50%) 0 0)`
-                            }
+                                backgroundColor: 'linear-gradient(to bottom right, #e084b4 0%, #77bfaf 100%)'
+                            },
+                            color: 'white'
+                            // '&:disabled': {
+                            //     backgroundColor: theme.palette.secondary.main,
+                            //     backgroundImage: `linear-gradient(rgb(0 0 0/50%) 0 0)`
+                            // }
                         }}
                         loading={loading}
                         variant='contained'
                         fullWidth
-                        color='secondary'
+                        // color='secondary'
                         onClick={() => {
                             setLoading(true)
                             executeCustomFunctionNodeApi.request({ javascriptFunction: inputValue })

@@ -528,7 +528,7 @@ query(formData).then((response) => {
                                                 sx={{
                                                     color: 'white',
                                                     // backgroundColor: '#2CD552',
-                                                    background: 'linear-gradient(to left, #77bfaf 0%, #e084b4 100%)'
+                                                    background: 'linear-gradient(to bottom right, #e084b4 0%, #77bfaf 100%)'
                                                     // '&:hover': {
                                                     //     backgroundColor: '#77bfaf'
                                                     // }
