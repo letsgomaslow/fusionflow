@@ -116,7 +116,7 @@
                 "type": "CustomTool",
                 "baseClasses": ["CustomTool", "Tool", "StructuredTool"],
                 "category": "Tools",
-                "description": "Use custom tool you've created in Flowise within chatflow",
+                "description": "Use custom tool you've created in Fusion Flow within chatflow",
                 "inputParams": [
                     {
                         "label": "Select Tool",

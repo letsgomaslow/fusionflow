@@ -408,13 +408,13 @@ const ShareChatbot = ({ isSessionMemory }) => {
                     />
                 </div>
             </Stack>
-            {textField(title, 'title', 'Title', 'string', 'Flowise Assistant')}
+            {textField(title, 'title', 'Title', 'string', 'Fusion Flow Assistant')}
             {textField(
                 titleAvatarSrc,
                 'titleAvatarSrc',
                 'Title Avatar Link',
                 'string',
-                `https://raw.githubusercontent.com/FlowiseAI/Flowise/main/assets/FloWiseAI_dark.png`
+                `https://fusionflow.maslow.ai/static/media/flowise_logo.77038d4bc53c3ce4765b.png`
             )}
             {textField(welcomeMessage, 'welcomeMessage', 'Welcome Message', 'string', 'Hello! This is custom welcome message')}
             {colorField(backgroundColor, 'backgroundColor', 'Background Color')}

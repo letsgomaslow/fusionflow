@@ -43,8 +43,7 @@ class VectaraUpload_VectorStores implements INode {
             {
                 label: 'Metadata Filter',
                 name: 'filter',
-                description:
-                    'Filter to apply to Vectara metadata. Refer to the <a target="_blank" href="https://docs.flowiseai.com/vector-stores/vectara">documentation</a> on how to use Vectara filters with Flowise.',
+                description: 'Filter to apply to Vectara metadata.',
                 type: 'string',
                 additionalParams: true,
                 optional: true
@@ -152,7 +151,7 @@ class VectaraUpload_VectorStores implements INode {
             const retriever = vectorStore.asRetriever(k, vectaraFilter)
             return retriever
         } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
+            (vectorStore as any).k = k
             return vectorStore
         }
         return vectorStore

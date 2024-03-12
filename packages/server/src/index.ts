@@ -185,7 +185,7 @@ export class App {
         this.app.get('/api/v1/ip', (request, response) => {
             response.send({
                 ip: request.ip,
-                msg: 'Check returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 and restart Cloud-Hosted Flowise until the IP address matches your own. Visit https://docs.flowiseai.com/configuration/rate-limit#cloud-hosted-rate-limit-setup-guide for more information.'
+                msg: 'Check returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 and restart Cloud-Hosted Fusion Flow until the IP address matches your own.'
             })
         })
 
@@ -307,7 +307,7 @@ export class App {
         // execute custom function node
         this.app.post('/api/v1/node-custom-function', async (req: Request, res: Response) => {
             const body = req.body
-            const nodeData = { inputs: body }
+            const nodeData = { inputs: { task: body } }
             if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, 'customFunction')) {
                 try {
                     const nodeInstanceFilePath = this.nodesPool.componentNodes['customFunction'].filePath as string
@@ -788,7 +788,7 @@ export class App {
             const existingFiles = resp.data ?? []
 
             if (retrievedAssistant.file_ids && retrievedAssistant.file_ids.length) {
-                ;(retrievedAssistant as any).files = existingFiles.filter((file) => retrievedAssistant.file_ids.includes(file.id))
+                (retrievedAssistant as any).files = existingFiles.filter((file) => retrievedAssistant.file_ids.includes(file.id))
             }
 
             return res.json(retrievedAssistant)
@@ -1909,7 +1909,7 @@ export class App {
             removePromises.push(this.telemetry.flush())
             await Promise.all(removePromises)
         } catch (e) {
-            logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
+            logger.error(`❌[server]: Fusion Flow Server shut down error: ${e}`)
         }
     }
 }
@@ -1934,7 +1934,7 @@ export async function start(): Promise<void> {
     await serverApp.config(io)
 
     server.listen(port, () => {
-        logger.info(`⚡️ [server]: Flowise Server is listening at ${port}`)
+        logger.info(`⚡️ [server]: Fusion Flow Server is listening at ${port}`)
     })
 }
 

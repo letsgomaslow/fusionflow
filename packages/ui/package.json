@@ -1,11 +1,11 @@
 {
-    "name": "flowise-ui",
+    "name": "fusion-flow",
     "version": "1.5.0",
     "license": "SEE LICENSE IN LICENSE.md",
-    "homepage": "https://flowiseai.com",
+    "homepage": "https://fusionflow.maslow.ai",
     "author": {
-        "name": "HenryHeng",
-        "email": "henryheng@flowiseai.com"
+        "name": "Fusion Flow",
+        "email": "kusum.himral@primotech.com"
     },
     "dependencies": {
         "@auth0/auth0-react": "^2.2.4",
