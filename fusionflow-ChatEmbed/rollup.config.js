@@ -8,7 +8,6 @@ import typescript from '@rollup/plugin-typescript';
 import { typescriptPaths } from 'rollup-plugin-typescript-paths';
 import commonjs from '@rollup/plugin-commonjs';
 import { uglify } from 'rollup-plugin-uglify';
-import url from '@rollup/plugin-url';
 //import serve from "rollup-plugin-serve";
 //import livereload from "rollup-plugin-livereload";
 
@@ -24,10 +23,6 @@ const indexConfig = {
       exclude: 'node_modules/**',
       presets: ['solid', '@babel/preset-typescript'],
       extensions,
-    }),
-    url({
-      include: ['**/*.png'], // Adjust the file extensions as needed
-      limit: Infinity, // Set a high limit or remove it to inline the entire file
     }),
     postcss({
       plugins: [autoprefixer(), tailwindcss()],
