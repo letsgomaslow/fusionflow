@@ -1,0 +1,129 @@
+on:
+  push:
+    branches:
+      - cicd-prod-code-12sep
+
+jobs:
+  build-and-push-to-DO-CR:
+    runs-on: ubuntu-latest
+    env: 
+        PORT: ${{ secrets.PORT }}
+        DATABASE_PATH: ${{ secrets.DATABASE_PATH }}
+        APIKEY_PATH: ${{ secrets.APIKEY_PATH }}
+        SECRETKEY_PATH: ${{ secrets.SECRETKEY_PATH }}
+        LOG_PATH: ${{ secrets.LOG_PATH }}
+        DATABASE_TYPE: ${{ secrets.DATABASE_TYPE }}
+        DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+        DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+        DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+        DATABASE_USER: ${{ secrets.DATABASE_USER }}
+        DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+        DATABASE_SSL: ${{ secrets.DATABASE_SSL }}
+        DATABASE_CERT_PATH: ${{ secrets.DATABASE_CERT_PATH }}
+        FLOWISE_SECRETKEY_OVERWRITE: ${{ secrets.FLOWISE_SECRETKEY_OVERWRITE }}
+        DIGITALOCEAN_API_TOKEN: ${{secrets.DIGITALOCEAN_API_TOKEN}}
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
+      # Install DigitalOcean CLI (doctl)
+      - name: Install doctl
+        run: |
+          curl -sLO https://github.com/digitalocean/doctl/releases/download/v1.69.0/doctl-1.69.0-linux-amd64.tar.gz
+          tar xvfz doctl-1.69.0-linux-amd64.tar.gz
+          sudo mv ./doctl /usr/local/bin/doctl
+          sudo chmod +x /usr/local/bin/doctl
+
+      # Authenticate with DigitalOcean Container Registry using doctl
+      - name: Authenticate with DigitalOcean Container Registry
+        run: doctl auth init --access-token ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+      # Build the Docker image
+      - name: Build Docker image
+        run: docker build -t new-maslow .
+
+      # Tag the Docker image for DigitalOcean Container Registry
+      - name: Tag Docker image for DigitalOcean Container Registry
+        run: docker tag new-maslow registry.digitalocean.com/maslow--registry/new-maslow:latest
+
+      # Push the Docker image to DigitalOcean Container Registry
+      - name: Push Docker image to DigitalOcean Container Registry
+        run: |
+          doctl registry login --expiry-seconds 1000
+          docker push registry.digitalocean.com/maslow--registry/new-maslow:latest
+       
+      #- name: Remove old images from Container Registry
+        #uses: henrik242/docr-image-remove@v1
+       # with:
+       #  image_repository: new-maslow # required
+       #  buffer_size: 5
+       #  exclude: ^(latest|tag1|tag2)$
+  Deploy_To_DO_Droplet:
+    runs-on: ubuntu-latest
+    needs: build-and-push-to-DO-CR
+
+    steps:
+      # Install DigitalOcean CLI
+      - name: Install doctl
+        run: |
+          curl -sL https://github.com/digitalocean/doctl/releases/download/v1.69.0/doctl-1.69.0-linux-amd64.tar.gz | tar -xz
+          sudo mv doctl /usr/local/bin/doctl
+          sudo chmod +x /usr/local/bin/doctl
+
+      # Authenticate with Firewall Token
+      - name: Authenticate with Firewall Token
+        run: doctl auth init --access-token ${{ secrets.FIREWALL_ACCESS_TOKEN }}
+
+      # Get GitHub Actions IP
+      - name: Get GitHub Actions IP
+        id: github-actions-ip
+        run: echo "::set-output name=ip::$(curl -s ifconfig.me)"
+
+      # Extract Firewall ID
+      - name: Extract Firewall ID
+        id: extract-firewall-id
+        run: |
+          FIREWALL_ID=$(doctl compute firewall list --format "ID,Name" | grep "fusionflow" | awk '{print $1}')
+          echo "::set-output name=id::$FIREWALL_ID"
+
+      # Add GitHub Actions IP to DigitalOcean Firewall
+      - name: Add GitHub Actions IP to DigitalOcean Firewall
+        run: |
+          FIREWALL_ID=${{ steps.extract-firewall-id.outputs.id }}
+          if [ -z "$FIREWALL_ID" ]; then
+            echo "Firewall not found."
+            exit 1
+          else
+            doctl compute firewall add-rules $FIREWALL_ID --inbound-rules protocol:tcp,ports:22,address:${{ steps.github-actions-ip.outputs.ip }}/32
+          fi
+
+      # Authenticate with Droplet Connection Token
+      - name: Authenticate with Droplet Connection Token
+        run: doctl auth init --access-token ${{ secrets.DROPLET_CONNECTION_ACCESS_TOKEN }}
+
+
+      # SSH into Droplet and Execute Commands
+      - name: SSH into Droplet and Execute Commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.ACCESS_PORT }}
+
+          #script: |
+          #  cd /home/project
+         #   pwd
+            #sh docker_remove.sh
+            #sh final_deploy.sh
+
+      # Remove GitHub Actions IP from DigitalOcean Firewall
+      - name: Remove GitHub Actions IP from DigitalOcean Firewall
+        run: |
+          FIREWALL_ID=${{ steps.extract-firewall-id.outputs.id }}
+          if [ -z "$FIREWALL_ID" ]; then
+            echo "Firewall not found."
+            exit 1
+          else
+            doctl compute firewall remove-rules $FIREWALL_ID --inbound-rules protocol:tcp,ports:22,address:${{ steps.github-actions-ip.outputs.ip }}/32
+          fi
